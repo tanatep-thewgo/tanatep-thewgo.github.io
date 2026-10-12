@@ -510,6 +510,58 @@
     border: 1px solid var(--line);
     display: block;
   }
+  .gt-media{
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 210px;
+    gap: 22px;
+    align-items: start;
+    margin-bottom: 26px;
+  }
+  .gt-media .featured-shot{ margin: 0; }
+  .gt-video video{
+    width: 100%;
+    aspect-ratio: 480 / 1004;
+    object-fit: cover;
+    display: block;
+    border-radius: 26px;
+    border: 7px solid #16182a;
+    background: #16182a;
+  }
+  @media (max-width: 760px){
+    .gt-media{ grid-template-columns: 1fr; }
+    .gt-video{ max-width: 230px; margin: 0 auto !important; }
+  }
+
+  .work-strip{
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 132px));
+    gap: 12px;
+    margin: 4px 0 48px;
+  }
+  .work-tile{ display: block; }
+  .work-tile img, .work-tile video{
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    object-fit: cover;
+    display: block;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    background: var(--surface-2);
+    filter: saturate(0.85);
+    transition: filter .2s ease, border-color .2s ease;
+  }
+  .work-tile:hover img, .work-tile:hover video{ filter: none; }
+  .work-tile span{
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    color: var(--text-faint);
+    margin-top: 6px;
+  }
+  a.work-tile:hover img{ border-color: var(--accent); }
+  @media (max-width: 760px){
+    .work-strip{ grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+  }
   .featured-shot figcaption{
     font-family: var(--font-mono);
     font-size: 12px;
@@ -766,10 +818,16 @@
           <h3>GestureTalk — Thai Sign Language Recognition</h3>
           <p>An app that recognizes Thai Sign Language in real time by tracking 21 hand landmarks and classifying the pose — 15 finger-spelled letters and 4 everyday words. Built twice: once as a Python desktop app, then ported to run entirely in the browser.</p>
 
-          <figure class="featured-shot">
-            <img src="images/gesturetalk-app.jpg" alt="Three GestureTalk app screens on phones: the welcome screen, the camera prediction screen with letter and word modes, and the sign search list" loading="lazy">
-            <figcaption>the browser app: welcome, real-time prediction (letters / words), and sign search</figcaption>
-          </figure>
+          <div class="gt-media">
+            <figure class="featured-shot">
+              <img src="images/gesturetalk-app.jpg" alt="Three GestureTalk app screens on phones: the welcome screen, the camera prediction screen with letter and word modes, and the sign search list" loading="lazy">
+              <figcaption>the browser app: welcome, real-time prediction (letters / words), and sign search</figcaption>
+            </figure>
+            <figure class="featured-shot gt-video">
+              <video src="media/gesturetalk-demo.mp4" poster="media/gesturetalk-demo-poster.jpg" autoplay muted loop playsinline preload="metadata" aria-label="Screen recording of GestureTalk on a phone recognizing finger-spelled letters and the word for sorry in real time"></video>
+              <figcaption>live on a phone: letters, then words</figcaption>
+            </figure>
+          </div>
 
           <div class="build-cols">
             <div class="build-col">
@@ -857,12 +915,36 @@
           </div>
           <div class="activity-item">
             <h4>Freelance creative work</h4>
-            <p>Graphic design for posters and social media, promotional video editing, and event photography.</p>
+            <p>Graphic design for posters and social media, promotional video editing, and event photography. Samples below.</p>
           </div>
           <div class="activity-item">
             <h4>Badminton Club, MFU</h4>
             <p>Match official at university tournaments; helped organize club activities.</p>
           </div>
+        </div>
+
+        <p class="eyebrow grid-label">Freelance samples</p>
+        <div class="work-strip">
+          <a class="work-tile" href="media/garam-masala.jpg" target="_blank" rel="noopener">
+            <img src="media/garam-masala.jpg" alt="Garam Masala spice packaging design with a curry dish on a black background" loading="lazy">
+            <span>Packaging</span>
+          </a>
+          <a class="work-tile" href="media/portfolio-covers.jpg" target="_blank" rel="noopener">
+            <img src="media/portfolio-covers.jpg" alt="A spread of student portfolio cover designs in orange, blue and yellow layouts" loading="lazy">
+            <span>Cover design</span>
+          </a>
+          <div class="work-tile">
+            <video src="media/dirty-matcha.mp4" poster="media/dirty-matcha-poster.jpg" controls playsinline preload="none" aria-label="Promotional video for a cafe's Dirty Matcha drink"></video>
+            <span>Promo video</span>
+          </div>
+          <a class="work-tile" href="media/food-bibimbap.jpg" target="_blank" rel="noopener">
+            <img src="media/food-bibimbap.jpg" alt="Food photograph of bibimbap surrounded by Korean side dishes" loading="lazy">
+            <span>Food photo</span>
+          </a>
+          <a class="work-tile" href="media/food-table.jpg" target="_blank" rel="noopener">
+            <img src="media/food-table.jpg" alt="Overhead food photograph of a Korean barbecue table spread" loading="lazy">
+            <span>Food photo</span>
+          </a>
         </div>
 
         <p class="eyebrow grid-label">Certifications</p>
