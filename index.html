@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Thanatep Pamuta — Computer Vision &amp; Software</title>
-<meta name="description" content="Thanatep Pamuta — engineering student building real-time computer vision systems and shipping them to the browser." />
+<title>Thanatep Pamuta — AI, Web &amp; UX/UI</title>
+<meta name="description" content="Thanatep Pamuta — engineering student working across computer vision, web development and UX/UI design." />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Caveat:wght@500;600;700&display=swap" rel="stylesheet">
@@ -217,7 +217,8 @@
     transform: rotate(var(--tilt, 0deg));
     transition: transform .2s ease;
   }
-  .tag:hover{ transform: rotate(0deg) translateY(-1px); }
+  .tag{ transition: transform .2s ease, color .2s ease, border-color .2s ease, background .2s ease; }
+  .tag:hover{ transform: rotate(0deg) translateY(-1px); color: var(--accent); border-color: var(--accent-line); background: var(--accent-dim); }
   .tag:nth-of-type(1){ --tilt: -1.5deg; }
   .tag:nth-of-type(2){ --tilt: 1deg; }
   .tag:nth-of-type(3){ --tilt: -0.8deg; }
@@ -716,12 +717,12 @@
         <div>
           <h1>Thanatep Pamuta<svg class="scribble" viewBox="0 0 320 14" preserveAspectRatio="none" aria-hidden="true"><path d="M2,8 C40,2 80,12 120,6 C160,1 200,11 240,5 C265,1.5 290,9 316,4" fill="none" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"/></svg></h1>
           <div class="hero-tags">
-            <span class="tag primary">Computer Vision</span>
-            <span class="tag">Applied AI</span>
-            <span class="tag">Web</span>
-            <span class="hand-note">← mostly this lately</span>
+            <span class="tag">AI / Computer Vision</span>
+            <span class="tag">Frontend / Web</span>
+            <span class="tag">UX/UI Design</span>
+            <span class="hand-note">↑ GestureTalk uses all three</span>
           </div>
-          <p class="lead">Digital &amp; Communication Engineering student building real-time vision systems — hand, face and posture tracking — and shipping them all the way to the browser.</p>
+          <p class="lead">Digital &amp; Communication Engineering student who trains vision models, builds them into browser apps, and designs the screens people actually use.</p>
           <div class="hero-ctas">
             <a class="btn primary" href="#projects">View projects</a>
             <a class="btn ghost" href="mailto:tanatep.pamuta@gmail.com">Email me</a>
@@ -974,7 +975,7 @@
         <div>
           <p class="eyebrow">Contact</p>
           <h2 style="margin-bottom:16px;">Let's build something.</h2>
-          <p class="lead">Open to AI, Computer Vision and Software Engineer internships for Jan–Apr 2027 — happy to walk through the GestureTalk build or anything else here.</p>
+          <p class="lead">Open to AI / Computer Vision, Frontend / Web and UX/UI internships for Jan–Apr 2027 — happy to walk through the GestureTalk build or anything else here.</p>
           <a class="btn primary" href="mailto:tanatep.pamuta@gmail.com">Email me</a>
         </div>
         <ul class="contact-list">
