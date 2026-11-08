@@ -759,7 +759,7 @@
   }
   @media (max-width: 860px){
     .hero-grid{ grid-template-columns: 1fr; }
-    .hero-visual{ order: -1; margin-bottom: 12px; }
+    .hero-visual{ order: 0; margin-top: 44px; }
     .landmark-card{ max-width: 320px; margin: 0 auto; }
     .contact-grid{ grid-template-columns: 1fr; }
   }
@@ -769,6 +769,54 @@
     .project-grid, .project-grid.two{ grid-template-columns: 1fr; }
     .project-featured{ padding: 26px; }
     .hero h1{ font-size: 38px; }
+  }
+
+  /* ---------- mobile carousels ---------- */
+  :root{ --gutter: 32px; }
+  @media (max-width: 640px){ :root{ --gutter: 20px; } }
+  .carousel-nav{ display: none; }
+  @media (max-width: 760px){
+    .carousel{
+      display: flex !important;
+      gap: 14px;
+      overflow-x: auto;
+      overscroll-behavior-x: contain;
+      scroll-snap-type: x mandatory;
+      scroll-padding-inline: var(--gutter);
+      margin-inline: calc(-1 * var(--gutter));
+      padding: 6px var(--gutter) 10px;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+    }
+    .carousel::-webkit-scrollbar{ display: none; }
+    .carousel > *{
+      flex: 0 0 82%;
+      scroll-snap-align: start;
+      transform: none !important;
+    }
+    .carousel.project-grid > *:hover, .carousel.cert-grid > *:hover{ transform: none !important; }
+    .carousel.work-strip > *{ flex-basis: 42%; }
+    .carousel.project-grid.two, .carousel.work-strip{ margin-bottom: 0; }
+
+    .carousel-nav{
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin: 14px 0 40px;
+    }
+    .carousel-nav button{
+      width: 40px; height: 40px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: var(--surface);
+      color: var(--text);
+      display: inline-flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      transition: opacity .2s ease, border-color .2s ease, color .2s ease;
+    }
+    .carousel-nav button:not(:disabled):active{ border-color: var(--accent); color: var(--accent); }
+    .carousel-nav button:disabled{ opacity: .35; cursor: default; }
+    .carousel-nav svg{ width: 18px; height: 18px; }
   }
 </style>
 </head>
@@ -943,7 +991,7 @@
         </article>
 
         <p class="eyebrow grid-label">More vision work</p>
-        <div class="project-grid two">
+        <div class="project-grid two carousel" aria-label="More vision work">
           <div class="project-card">
             <img class="card-img" src="images/enhanced-vision-demo-day.jpg" alt="Team at the Startup Thailand League Demo Day booth with the Enhanced Vision poster" loading="lazy">
             <span class="ftag">Startup Thailand League 2023 · team</span>
@@ -961,7 +1009,7 @@
         </div>
 
         <p class="eyebrow grid-label">Other builds</p>
-        <div class="project-grid">
+        <div class="project-grid carousel" aria-label="Other builds">
           <div class="project-card">
             <a href="https://www.figma.com/proto/5XdHMakxD1wf58hPr3PqZ3/Untitled?node-id=1-3&amp;t=2wgtDc7m1pOZhFEg-1&amp;scaling=contain&amp;content-scaling=fixed&amp;page-id=0%3A1&amp;starting-point-node-id=1%3A3" target="_blank" rel="noopener" aria-label="Open the Figma prototype"><img class="card-img" src="images/web-design.jpg" alt="Website interface designed in Figma with a VR headset product page" loading="lazy"></a>
             <h4>Web Design &amp; Development</h4>
@@ -1011,7 +1059,7 @@
         </div>
 
         <p class="eyebrow grid-label">Freelance samples</p>
-        <div class="work-strip">
+        <div class="work-strip carousel" aria-label="Freelance samples">
           <a class="work-tile" href="media/garam-masala.jpg" target="_blank" rel="noopener">
             <img src="media/garam-masala.jpg" alt="Garam Masala spice packaging design with a curry dish on a black background" loading="lazy">
             <span>Packaging</span>
@@ -1035,7 +1083,7 @@
         </div>
 
         <p class="eyebrow grid-label">Certifications</p>
-        <div class="cert-grid">
+        <div class="cert-grid carousel" aria-label="Certifications">
           <a class="cert-card" href="certs/hccda-cloud-native.jpg" target="_blank" rel="noopener">
             <img src="certs/hccda-cloud-native.jpg" alt="Huawei Cloud HCCDA – Cloud Native developer certificate for Thanatep Pamuta" loading="lazy">
             <span class="cert-name">HCCDA — Cloud Native</span>
@@ -1185,6 +1233,34 @@
     root.setAttribute('data-theme', next);
     try { localStorage.setItem('theme', next); } catch(e) {}
     syncLabel();
+  });
+
+  // ---- mobile carousels ----
+  var chevron = function(d){ return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="' + d + '"/></svg>'; };
+  document.querySelectorAll('.carousel').forEach(function(track){
+    var nav = document.createElement('div');
+    nav.className = 'carousel-nav';
+    var label = track.getAttribute('aria-label') || 'items';
+    nav.innerHTML = '<button type="button" aria-label="Previous ' + label + '">' + chevron('M15 18l-6-6 6-6') + '</button>' +
+                    '<button type="button" aria-label="Next ' + label + '">' + chevron('M9 6l6 6-6 6') + '</button>';
+    track.insertAdjacentElement('afterend', nav);
+    var prev = nav.children[0], next = nav.children[1];
+    function step(){
+      var first = track.children[0];
+      if(!first) return track.clientWidth;
+      var gap = parseFloat(getComputedStyle(track).columnGap) || 14;
+      return first.getBoundingClientRect().width + gap;
+    }
+    function update(){
+      var max = track.scrollWidth - track.clientWidth - 2;
+      prev.disabled = track.scrollLeft <= 2;
+      next.disabled = track.scrollLeft >= max;
+    }
+    prev.addEventListener('click', function(){ track.scrollBy({ left: -step(), behavior: reduceMotion ? 'auto' : 'smooth' }); });
+    next.addEventListener('click', function(){ track.scrollBy({ left: step(), behavior: reduceMotion ? 'auto' : 'smooth' }); });
+    track.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    update();
   });
 
   // ---- scroll reveal ----
