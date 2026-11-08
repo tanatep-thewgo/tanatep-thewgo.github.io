@@ -8,6 +8,14 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Caveat:wght@500;600;700&display=swap" rel="stylesheet">
+<script>
+  (function(){
+    var t = null;
+    try { t = localStorage.getItem('theme'); } catch(e) {}
+    if(!t){ t = (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light'; }
+    document.documentElement.setAttribute('data-theme', t);
+  })();
+</script>
 <style>
   :root{
     --bg: #FFFFFF;
@@ -25,6 +33,12 @@
     --accent-line: rgba(46,90,240,0.30);
     --amber: #B8862E;
     --amber-dim: rgba(184,134,46,0.08);
+    --on-ink: #FFFFFF;
+    --nav-bg: rgba(255,255,255,0.78);
+    --card-bg: #FFFFFF;
+    --glass: rgba(255,255,255,0.82);
+    --shadow: rgba(18,18,18,0.25);
+    color-scheme: light;
 
     --font-display: 'Manrope', system-ui, sans-serif;
     --font-body: 'Inter', system-ui, sans-serif;
@@ -33,6 +47,55 @@
 
     --container: 1120px;
     --radius: 14px;
+  }
+
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+    --bg: #0F1115;
+    --bg-soft: #13161B;
+    --surface: #181B21;
+    --surface-2: #1E2229;
+    --line: #2A2F38;
+    --line-soft: #22262E;
+    --ink: #F2F3F5;
+    --text: #E6E8EB;
+    --text-muted: #A3A9B3;
+    --text-faint: #6F7682;
+    --accent: #7C9CFF;
+    --accent-dim: rgba(124,156,255,0.12);
+    --accent-line: rgba(124,156,255,0.40);
+    --amber: #E0B25C;
+    --amber-dim: rgba(224,178,92,0.12);
+    --on-ink: #0F1115;
+    --nav-bg: rgba(15,17,21,0.78);
+    --card-bg: #181B21;
+    --glass: rgba(24,27,33,0.85);
+    --shadow: rgba(0,0,0,0.55);
+    color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg: #0F1115;
+    --bg-soft: #13161B;
+    --surface: #181B21;
+    --surface-2: #1E2229;
+    --line: #2A2F38;
+    --line-soft: #22262E;
+    --ink: #F2F3F5;
+    --text: #E6E8EB;
+    --text-muted: #A3A9B3;
+    --text-faint: #6F7682;
+    --accent: #7C9CFF;
+    --accent-dim: rgba(124,156,255,0.12);
+    --accent-line: rgba(124,156,255,0.40);
+    --amber: #E0B25C;
+    --amber-dim: rgba(224,178,92,0.12);
+    --on-ink: #0F1115;
+    --nav-bg: rgba(15,17,21,0.78);
+    --card-bg: #181B21;
+    --glass: rgba(24,27,33,0.85);
+    --shadow: rgba(0,0,0,0.55);
+    color-scheme: dark;
   }
 
   *{ box-sizing: border-box; }
@@ -44,6 +107,7 @@
 
   body{
     margin:0;
+    transition: background-color .25s ease, color .25s ease;
     background: var(--bg);
     color: var(--text);
     font-family: var(--font-body);
@@ -91,7 +155,7 @@
     top: 0;
     z-index: 40;
     backdrop-filter: blur(10px);
-    background: rgba(255,255,255,0.78);
+    background: var(--nav-bg);
     border-bottom: 1px solid var(--line-soft);
   }
   .nav-inner{
@@ -138,6 +202,22 @@
   }
   .nav-cta:hover{ border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
   .nav-toggle{ display:none; }
+  .nav-right{ display:flex; align-items:center; gap: 12px; }
+  .theme-toggle{
+    width: 38px; height: 38px;
+    display:inline-flex; align-items:center; justify-content:center;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--text);
+    cursor: pointer;
+    transition: border-color .2s ease, color .2s ease, background .2s ease;
+  }
+  .theme-toggle:hover{ border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
+  .theme-toggle svg{ width: 18px; height: 18px; }
+  .theme-toggle .i-sun{ display:none; }
+  :root[data-theme="dark"] .theme-toggle .i-sun{ display:block; }
+  :root[data-theme="dark"] .theme-toggle .i-moon{ display:none; }
 
   @media (max-width: 780px){
     .nav-links{ display:none; }
@@ -252,14 +332,14 @@
   }
   .btn.primary{
     background: var(--ink);
-    color: #FFFFFF;
+    color: var(--on-ink);
     border: 1px solid var(--ink);
   }
-  .btn.primary:hover{ transform: translateY(-2px); box-shadow: 0 10px 26px -12px rgba(18,18,18,0.35); }
+  .btn.primary:hover{ transform: translateY(-2px); box-shadow: 0 10px 26px -12px var(--shadow); }
   .btn.ghost{
     border: 1px solid var(--line);
     color: var(--text);
-    background: #FFFFFF;
+    background: var(--card-bg);
   }
   .btn.ghost:hover{ border-color: var(--ink); transform: translateY(-2px); }
   .text-link{
@@ -293,7 +373,7 @@
     border-radius: 20px;
     overflow: hidden;
     transform: rotate(-1.6deg);
-    box-shadow: 0 18px 40px -22px rgba(18,18,18,0.25);
+    box-shadow: 0 18px 40px -22px var(--shadow);
     transition: transform .3s ease;
   }
   .landmark-card:hover{ transform: rotate(-0.4deg); }
@@ -330,7 +410,7 @@
     font-family: var(--font-mono);
     font-size: 11.5px;
     color: var(--text-muted);
-    background: rgba(255,255,255,0.82);
+    background: var(--glass);
     border: 1px solid var(--line);
     border-radius: 8px;
     padding: 10px 12px;
@@ -705,7 +785,13 @@
         <a href="#activities">Activities</a>
         <a href="#contact">Contact</a>
       </nav>
-      <a class="nav-cta" href="mailto:tanatep.pamuta@gmail.com">Get in touch</a>
+      <div class="nav-right">
+        <button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch to dark mode">
+          <svg class="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+          <svg class="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></svg>
+        </button>
+        <a class="nav-cta" href="mailto:tanatep.pamuta@gmail.com">Get in touch</a>
+      </div>
     </div>
   </header>
 
@@ -1085,6 +1171,21 @@
   if(!reduceMotion){
     setInterval(function(){ tipIdx = (tipIdx + 1) % tips.length; showLandmark(); }, 1800);
   }
+
+  // ---- theme toggle ----
+  var root = document.documentElement;
+  var toggle = document.getElementById('themeToggle');
+  function syncLabel(){
+    var dark = root.getAttribute('data-theme') === 'dark';
+    toggle.setAttribute('aria-label', dark ? 'Switch to light mode' : 'Switch to dark mode');
+  }
+  syncLabel();
+  toggle.addEventListener('click', function(){
+    var next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    root.setAttribute('data-theme', next);
+    try { localStorage.setItem('theme', next); } catch(e) {}
+    syncLabel();
+  });
 
   // ---- scroll reveal ----
   var revealEls = document.querySelectorAll('.reveal');
