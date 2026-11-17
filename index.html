@@ -277,6 +277,15 @@
     display: inline-block;
   }
   .hero h1 .nick{ position: relative; display: inline-block; }
+  .hero-avatar{
+    width: 1.05em; height: 1.05em;
+    border-radius: 50%;
+    object-fit: cover;
+    vertical-align: -0.2em;
+    margin-right: 0.28em;
+    border: 3px solid var(--g-line, #fff);
+    box-shadow: 0 6px 16px -8px rgba(30,45,110,0.45);
+  }
   .hero h1 .full{
     display: block;
     font-size: 0.5em;
@@ -412,7 +421,8 @@
   .lm-edge{ stroke: var(--accent); stroke-opacity: 0.45; stroke-width: 1.4; fill:none; }
   .lm-node{ fill: var(--accent); }
   .lm-node.tip{ fill: var(--amber); }
-  .lm-node-ring{ fill:none; stroke: var(--accent); stroke-opacity:0.35; }
+  .lm-node-ring{ fill:none; stroke: var(--accent); stroke-opacity:0.6; stroke-width:1.5; }
+  .landmark-card{ cursor: pointer; touch-action: manipulation; }
 
   .readout{
     position:absolute;
@@ -978,12 +988,13 @@
               <g id="nodes"></g>
             </svg>
             <div class="readout" id="readout">
+              <div><span class="k">pose</span> <span class="v" id="rPose">open hand</span></div>
               <div><span class="k">landmark</span> <span class="v" id="rIdx">08</span></div>
               <div><span class="k">x</span> <span class="v" id="rX">0.000</span> <span class="k">y</span> <span class="v" id="rY">0.000</span></div>
               <div><span class="k">z</span> <span class="v" id="rZ">0.000</span></div>
             </div>
           </div>
-          <p class="landmark-caption">the 21-point hand model GestureTalk tracks (illustration)</p>
+          <p class="landmark-caption">the 21-point hand model GestureTalk tracks (illustration · hover or tap me)</p>
         </div>
       </div>
     </section>
@@ -1233,8 +1244,8 @@
 
 <script>
 (function(){
-  // ---- hand-landmark hero graphic ----
-  var points = [
+  // ---- hand-landmark hero graphic (interactive illustration) ----
+  var base = [
     [150,275],[124,254],[103,224],[88,194],[75,170],
     [129,185],[124,140],[121,104],[119,74],
     [155,179],[158,128],[158,86],[158,50],
@@ -1242,89 +1253,149 @@
     [205,200],[212,161],[218,131],[223,107]
   ];
   var tips = [4,8,12,16,20];
-  var edges = [
-    [0,1],[1,2],[2,3],[3,4],
-    [0,5],[5,6],[6,7],[7,8],
-    [5,9],[9,10],[10,11],[11,12],
-    [9,13],[13,14],[14,15],[15,16],
-    [13,17],[17,18],[18,19],[19,20],
-    [0,17]
+  var edges = [[0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],[5,9],[9,10],[10,11],[11,12],
+               [9,13],[13,14],[14,15],[15,16],[13,17],[17,18],[18,19],[19,20],[0,17]];
+  var fingers = [[5,6,7,8],[9,10,11,12],[13,14,15,16],[17,18,19,20]];
+
+  // build a pose from curl amounts: [thumb, index, middle, ring, pinky], 0 = straight, 1 = curled
+  function makePose(c){
+    var p = base.map(function(q){ return q.slice(); });
+    fingers.forEach(function(f, fi){
+      var k = c[fi+1], m = base[f[0]];
+      var fold = [[1,-17],[-2,-6],[-3,7]];   // folded finger seen from the front
+      for(var j=1;j<4;j++){
+        var o = base[f[j]], q = [m[0] + fold[j-1][0], m[1] + fold[j-1][1]];
+        p[f[j]] = [o[0] + (q[0]-o[0])*k, o[1] + (q[1]-o[1])*k];
+      }
+    });
+    var tc = c[0], tgt = {2:[108,222], 3:[122,206], 4:[142,198]};
+    for(var j=2;j<5;j++){
+      var o = base[j], q = tgt[j];
+      p[j] = [o[0] + (q[0]-o[0])*tc, o[1] + (q[1]-o[1])*tc];
+    }
+    return p;
+  }
+  var poses = [
+    { name: 'open hand', c: [0,0,0,0,0] },
+    { name: 'peace',     c: [1,0,0,1,1] },
+    { name: 'point',     c: [1,0,1,1,1] },
+    { name: 'fist',      c: [1,1,1,1,1] },
+    { name: 'call me',   c: [0,1,1,1,0] }
   ];
 
+  poses.forEach(function(ps){ ps.pts = makePose(ps.c); });
+  var svg = document.querySelector('.landmark-card svg');
+  var card = document.querySelector('.landmark-card');
   var edgeG = document.getElementById('edges');
   var nodeG = document.getElementById('nodes');
   var svgNS = 'http://www.w3.org/2000/svg';
+  var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  edges.forEach(function(e, i){
-    var p1 = points[e[0]], p2 = points[e[1]];
-    var line = document.createElementNS(svgNS, 'line');
-    line.setAttribute('x1', p1[0]); line.setAttribute('y1', p1[1]);
-    line.setAttribute('x2', p2[0]); line.setAttribute('y2', p2[1]);
-    line.setAttribute('class', 'lm-edge');
-    line.style.opacity = '0';
-    line.style.transition = 'opacity .4s ease';
-    edgeG.appendChild(line);
-    setTimeout(function(){ line.style.opacity = '1'; }, 30 * i);
+  var lines = edges.map(function(e, i){
+    var l = document.createElementNS(svgNS, 'line');
+    l.setAttribute('class', 'lm-edge');
+    l.style.opacity = '0'; l.style.transition = 'opacity .4s ease';
+    edgeG.appendChild(l);
+    setTimeout(function(){ l.style.opacity = '1'; }, 30 * i);
+    return l;
   });
-
-  points.forEach(function(p, i){
+  var dots = base.map(function(p, i){
     var isTip = tips.indexOf(i) !== -1;
     var c = document.createElementNS(svgNS, 'circle');
-    c.setAttribute('cx', p[0]); c.setAttribute('cy', p[1]);
     c.setAttribute('r', isTip ? 4.5 : 3.2);
     c.setAttribute('class', 'lm-node' + (isTip ? ' tip' : ''));
-    c.style.opacity = '0';
-    c.style.transition = 'opacity .4s ease';
+    c.style.opacity = '0'; c.style.transition = 'opacity .4s ease';
     nodeG.appendChild(c);
     setTimeout(function(){ c.style.opacity = '1'; }, 22 * i + 200);
+    return c;
   });
-
-  // idle pulse ring on the index fingertip (landmark 8)
-  var ringHost = points[8];
   var ring = document.createElementNS(svgNS, 'circle');
-  ring.setAttribute('cx', ringHost[0]);
-  ring.setAttribute('cy', ringHost[1]);
-  ring.setAttribute('r', 4.5);
   ring.setAttribute('class', 'lm-node-ring');
   nodeG.appendChild(ring);
 
-  var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var rIdx = document.getElementById('rIdx'), rX = document.getElementById('rX'),
+      rY = document.getElementById('rY'), rZ = document.getElementById('rZ'),
+      rPose = document.getElementById('rPose');
 
-  var t = 0;
-  function animateRing(){
-    if(reduceMotion) return;
-    t += 0.035;
-    var r = 4.5 + Math.sin(t) * 3.5 + 3.5;
-    var op = 0.5 - (Math.sin(t) * 0.25 + 0.25);
-    ring.setAttribute('r', Math.max(4.5, r));
-    ring.style.opacity = op;
-    requestAnimationFrame(animateRing);
+  var cur = poses[0].pts.map(function(q){ return q.slice(); });
+  var from = cur, poseIdx = 0, morphStart = -1, MORPH = 700;
+  var focus = 8, hovering = false, tipIdx = 1, t0 = performance.now();
+  var mouse = null;
+
+  function ease(x){ return x < .5 ? 4*x*x*x : 1 - Math.pow(-2*x+2, 3)/2; }
+  function setPose(i){
+    from = cur.map(function(q){ return q.slice(); });
+    poseIdx = i; morphStart = performance.now();
+    var c = poses[i].c; if(c[tips.indexOf(focus)] >= 0.5){ var o = tips.filter(function(t, j){ return c[j] < 0.5; }); focus = o.length ? o[0] : 0; }
+    if(rPose) rPose.textContent = poses[i].name;
   }
-  requestAnimationFrame(animateRing);
+  function pad(i){ return (i < 10 ? '0' : '') + i; }
 
-  // readout: normalized position of the highlighted landmark in this illustration
-  var rIdx = document.getElementById('rIdx');
-  var rX = document.getElementById('rX');
-  var rY = document.getElementById('rY');
-  var rZ = document.getElementById('rZ');
-  var tipIdx = 0;
-
-  function fmt(n){ return n.toFixed(3); }
-
-  function showLandmark(){
-    var i = tips[tipIdx];
-    var p = points[i];
-    rIdx.textContent = (i < 10 ? '0' : '') + i;
-    rX.textContent = fmt(p[0] / 300);
-    rY.textContent = fmt(p[1] / 340);
-    rZ.textContent = fmt(0);
-    ring.setAttribute('cx', p[0]);
-    ring.setAttribute('cy', p[1]);
+  function frame(now){
+    var target = poses[poseIdx].pts;
+    var k = morphStart < 0 ? 1 : Math.min(1, (now - morphStart) / MORPH);
+    var e = ease(k);
+    var tt = (now - t0) / 1000;
+    var shown = [];
+    for(var i=0;i<21;i++){
+      var x = from[i][0] + (target[i][0]-from[i][0])*e;
+      var y = from[i][1] + (target[i][1]-from[i][1])*e;
+      cur[i] = [x, y];
+      // gentle "live tracking" drift
+      var dx = reduceMotion ? 0 : Math.sin(tt*1.3 + i*0.7) * 0.7 + Math.sin(tt*0.5) * 2.2;
+      var dy = reduceMotion ? 0 : Math.cos(tt*1.1 + i*0.9) * 0.7 + Math.cos(tt*0.4) * 1.6;
+      if(mouse){ dx += mouse[0] * 8; dy += mouse[1] * 6; }
+      shown.push([x+dx, y+dy]);
+    }
+    edges.forEach(function(ed, j){
+      var a = shown[ed[0]], b = shown[ed[1]];
+      lines[j].setAttribute('x1', a[0]); lines[j].setAttribute('y1', a[1]);
+      lines[j].setAttribute('x2', b[0]); lines[j].setAttribute('y2', b[1]);
+    });
+    dots.forEach(function(d, j){ d.setAttribute('cx', shown[j][0]); d.setAttribute('cy', shown[j][1]); });
+    var f = shown[focus], pulse = reduceMotion ? 0.5 : (Math.sin(tt*3) + 1) / 2;
+    ring.setAttribute('cx', f[0]); ring.setAttribute('cy', f[1]);
+    ring.setAttribute('r', 6 + pulse * 6); ring.style.opacity = 0.55 - pulse * 0.35;
+    rIdx.textContent = pad(focus);
+    rX.textContent = (f[0]/300).toFixed(3);
+    rY.textContent = (f[1]/340).toFixed(3);
+    rZ.textContent = '0.000';
+    if(!reduceMotion) requestAnimationFrame(frame);
   }
-  showLandmark();
+  requestAnimationFrame(frame);
+  if(rPose) rPose.textContent = poses[0].name;
+
   if(!reduceMotion){
-    setInterval(function(){ tipIdx = (tipIdx + 1) % tips.length; showLandmark(); }, 1800);
+    setInterval(function(){ if(!hovering) setPose((poseIdx + 1) % poses.length); }, 2600);
+    setInterval(function(){
+      if(hovering) return;
+      var c = poses[poseIdx].c, open = tips.filter(function(t, i){ return c[i] < 0.5; });
+      if(!open.length) open = [0];
+      tipIdx = (tipIdx + 1) % open.length; focus = open[tipIdx];
+    }, 1300);
   }
+
+  // hover: tilt the card, follow the cursor, focus the nearest landmark
+  card.addEventListener('pointermove', function(ev){
+    hovering = true;
+    var r = card.getBoundingClientRect();
+    var nx = (ev.clientX - r.left) / r.width - 0.5, ny = (ev.clientY - r.top) / r.height - 0.5;
+    mouse = [nx, ny];
+    if(!reduceMotion){
+      card.style.transition = 'transform .12s ease-out';
+      card.style.transform = 'perspective(900px) rotateX(' + (-ny*8) + 'deg) rotateY(' + (nx*10) + 'deg) rotate(-0.4deg)';
+    }
+    var sr = svg.getBoundingClientRect();
+    var px = (ev.clientX - sr.left) / sr.width * 300, py = (ev.clientY - sr.top) / sr.height * 340;
+    var best = 0, bd = 1e9;
+    cur.forEach(function(q, i){ var d = (q[0]-px)*(q[0]-px) + (q[1]-py)*(q[1]-py); if(d < bd){ bd = d; best = i; } });
+    focus = best;
+  });
+  card.addEventListener('pointerleave', function(){
+    hovering = false; mouse = null;
+    card.style.transition = ''; card.style.transform = '';
+  });
+  card.addEventListener('click', function(){ setPose((poseIdx + 1) % poses.length); });
 
   // ---- theme toggle ----
   var root = document.documentElement;
